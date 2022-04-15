@@ -21,17 +21,20 @@ type CubeClient struct {
 	cubeURL     url.URL
 }
 
-func NewCubeClient(cubeURL url.URL) *CubeClient {
+func NewCubeClient(cubeURL url.URL, accessToken *string) *CubeClient {
 	return &CubeClient{
-		cubeURL: cubeURL,
+		cubeURL:     cubeURL,
+		accessToken: accessToken,
 	}
 }
 
 // TODO: Document
 // TODO: Figure out an abstraction better than an interface
-func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) (interface{}, error) {
+// Load fetches JSON-encoded data and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error. func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) (interface{}, error) {
+// Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
+func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) error {
 	if err := query.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid Cube query: %w", err)
+		return fmt.Errorf("invalid Cube query: %w", err)
 	}
 
 	var beginTime = time.Now()
@@ -41,7 +44,7 @@ func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interfac
 
 	marshaledLoadBody, err := json.Marshal(loadBody)
 	if err != nil {
-		return nil, fmt.Errorf("marshal load body: %w", err)
+		return fmt.Errorf("marshal load body: %w", err)
 	}
 
 	var (
@@ -61,7 +64,7 @@ func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interfac
 		u.Path = cubeLoadPath
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewBuffer(marshaledLoadBody))
 		if err != nil {
-			return nil, fmt.Errorf("new request with context: %w", err)
+			return fmt.Errorf("new request with context: %w", err)
 		}
 
 		// Allow the user to leave off a token
@@ -74,7 +77,7 @@ func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interfac
 		limiter.Take()
 		response, err = http.DefaultClient.Do(req)
 		if err != nil {
-			return nil, fmt.Errorf("do request: %w", err)
+			return fmt.Errorf("do request: %w", err)
 		}
 
 		defer func(body io.ReadCloser) {
@@ -83,26 +86,32 @@ func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interfac
 
 		bodyBytes, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			return nil, fmt.Errorf("read response bytes: %w", err)
+			return fmt.Errorf("read response bytes: %w", err)
 		}
 
 		if response.StatusCode >= 400 {
-			return nil, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, strings.TrimSpace(string(bodyBytes)))
+			return fmt.Errorf("unexpected status code %d: %s", response.StatusCode, strings.TrimSpace(string(bodyBytes)))
 		}
 
-		err = json.Unmarshal(bodyBytes, &loadBody)
+		// TODO: Rename to request body and response body
+		err = json.Unmarshal(bodyBytes, &loadResponse)
 		if err != nil {
-			return nil, fmt.Errorf("decode response json (%s): %w", string(bodyBytes), err)
+			return fmt.Errorf("decode response json (%s): %w", string(bodyBytes), err)
 		}
 
 		currentTime := time.Now()
 
 		if loadResponse.Error == "" {
-			return &loadResponse, nil
+			// TODO: unmarshal loadResponse in the results pointer
+			if err = json.Unmarshal(loadResponse.Data, results); err != nil {
+				return fmt.Errorf("unmarshal load response data: %w", err)
+			}
+
+			return nil
 		} else if loadResponse.Error != continueWaitString {
-			return nil, fmt.Errorf("load query results: %s", loadResponse.Error)
+			return fmt.Errorf("load query results: %s", loadResponse.Error)
 		} else if currentTime.Sub(beginTime) > maximumQueryDuration {
-			return nil, fmt.Errorf("maximum query duration (%+v) exceeded after %d attempts", currentTime.Sub(beginTime), attempt)
+			return fmt.Errorf("maximum query duration (%+v) exceeded after %d attempts", currentTime.Sub(beginTime), attempt)
 		}
 	}
 }

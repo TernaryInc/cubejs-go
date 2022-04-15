@@ -1,6 +1,7 @@
 package cube
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -78,8 +79,9 @@ type Filter struct {
 }
 
 type LoadResponse struct {
-	Data  []LoadData `json:"data"`
-	Error string     `json:"error"`
+	// Data  []LoadData `json:"data"`
+	Data  json.RawMessage `json:"data"`
+	Error string          `json:"error"`
 }
 
 // Is there anything we can do with struct tags and JSON (un?)marshaling
