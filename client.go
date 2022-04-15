@@ -29,7 +29,6 @@ func NewCubeClient(cubeURL url.URL, accessToken *string) *CubeClient {
 }
 
 // TODO: Document
-// TODO: Figure out an abstraction better than an interface
 // Load fetches JSON-encoded data and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error. func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) (interface{}, error) {
 // Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
 func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) error {
@@ -38,11 +37,10 @@ func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interfac
 	}
 
 	var beginTime = time.Now()
-	var loadBody = loadBody{query}
-
+	var requestBody = requestBody{query}
 	var token = c.accessToken
 
-	marshaledLoadBody, err := json.Marshal(loadBody)
+	marshaledRequestBody, err := json.Marshal(requestBody)
 	if err != nil {
 		return fmt.Errorf("marshal load body: %w", err)
 	}
@@ -56,13 +54,13 @@ func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interfac
 	)
 
 	for {
-		var loadResponse LoadResponse
 		var response *http.Response
+		var responseBody ResponseBody
 		attempt++
 
 		var u = c.cubeURL
 		u.Path = cubeLoadPath
-		req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewBuffer(marshaledLoadBody))
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewBuffer(marshaledRequestBody))
 		if err != nil {
 			return fmt.Errorf("new request with context: %w", err)
 		}
@@ -84,32 +82,33 @@ func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interfac
 			_ = body.Close()
 		}(response.Body)
 
-		bodyBytes, err := ioutil.ReadAll(response.Body)
+		responseBytes, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			return fmt.Errorf("read response bytes: %w", err)
 		}
 
 		if response.StatusCode >= 400 {
-			return fmt.Errorf("unexpected status code %d: %s", response.StatusCode, strings.TrimSpace(string(bodyBytes)))
+			var preview = strings.TrimSpace(string(responseBytes))
+			return fmt.Errorf("unexpected status code %d: %s", response.StatusCode, preview[:min(1024, len(preview))])
 		}
 
-		// TODO: Rename to request body and response body
-		err = json.Unmarshal(bodyBytes, &loadResponse)
+		err = json.Unmarshal(responseBytes, &responseBody)
 		if err != nil {
-			return fmt.Errorf("decode response json (%s): %w", string(bodyBytes), err)
+			var preview = strings.TrimSpace(string(responseBytes))
+			return fmt.Errorf("decode response json (%s): %w", preview[:min(1024, len(preview))], err)
 		}
 
 		currentTime := time.Now()
 
-		if loadResponse.Error == "" {
+		if responseBody.Error == "" {
 			// TODO: unmarshal loadResponse in the results pointer
-			if err = json.Unmarshal(loadResponse.Data, results); err != nil {
+			if err = json.Unmarshal(responseBody.Data, results); err != nil {
 				return fmt.Errorf("unmarshal load response data: %w", err)
 			}
 
 			return nil
-		} else if loadResponse.Error != continueWaitString {
-			return fmt.Errorf("load query results: %s", loadResponse.Error)
+		} else if responseBody.Error != continueWaitString {
+			return fmt.Errorf("load query results: %s", responseBody.Error)
 		} else if currentTime.Sub(beginTime) > maximumQueryDuration {
 			return fmt.Errorf("maximum query duration (%+v) exceeded after %d attempts", currentTime.Sub(beginTime), attempt)
 		}

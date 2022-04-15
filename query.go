@@ -50,7 +50,7 @@ type Granularity string
 type Operator string
 type Order string
 
-type loadBody struct {
+type requestBody struct {
 	Query CubeQuery `json:"query"`
 }
 
@@ -78,7 +78,7 @@ type Filter struct {
 	Values []string `json:"values"`
 }
 
-type LoadResponse struct {
+type ResponseBody struct {
 	// Data  []LoadData `json:"data"`
 	Data  json.RawMessage `json:"data"`
 	Error string          `json:"error"`

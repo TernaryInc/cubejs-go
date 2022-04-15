@@ -34,3 +34,11 @@ type TestNower struct {
 func (n TestNower) Now() time.Time {
 	return n.T
 }
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+
+	return b
+}
