@@ -46,9 +46,9 @@ func NewClient(cubeURL url.URL, tokenGenerator AccessTokenGenerator) *Client {
 // TODO: Document
 // Load fetches JSON-encoded data and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error. func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) (interface{}, error) {
 // Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
-func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{}) error {
+func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{}) (ResponseMetadata, error) {
 	if err := query.Validate(); err != nil {
-		return fmt.Errorf("invalid Cube query: %w", err)
+		return ResponseMetadata{}, fmt.Errorf("invalid Cube query: %w", err)
 	}
 
 	var beginTime = time.Now()
@@ -56,7 +56,7 @@ func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{})
 
 	marshaledRequestBody, err := json.Marshal(requestBody)
 	if err != nil {
-		return fmt.Errorf("marshal load body: %w", err)
+		return ResponseMetadata{}, fmt.Errorf("marshal load body: %w", err)
 	}
 
 	var (
@@ -76,25 +76,26 @@ func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{})
 		url.Path = cubeLoadPath
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), bytes.NewBuffer(marshaledRequestBody))
 		if err != nil {
-			return fmt.Errorf("new request with context: %w", err)
+			return ResponseMetadata{}, fmt.Errorf("new request with context: %w", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
 
 		if c.tokenGenerator != nil {
 			if token, err := c.tokenGenerator.Get(ctx); err != nil {
-				return fmt.Errorf("generate token: %w", err)
+				return ResponseMetadata{}, fmt.Errorf("generate token: %w", err)
 			} else {
 				req.Header.Set("Authorization", token)
 			}
 		}
 
 		limiter.Take()
+
 		// TODO: Replace with a client with a sensible timeout
 		// https://medium.com/@nate510/don-t-use-go-s-default-http-client-4804cb19f779
 		response, err = http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("do request: %w", err)
+			return ResponseMetadata{}, fmt.Errorf("do request: %w", err)
 		}
 
 		defer func(body io.ReadCloser) {
@@ -103,18 +104,18 @@ func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{})
 
 		responseBytes, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			return fmt.Errorf("read response bytes: %w", err)
+			return ResponseMetadata{}, fmt.Errorf("read response bytes: %w", err)
 		}
 
 		if response.StatusCode >= 400 {
 			var preview = strings.TrimSpace(string(responseBytes))
-			return fmt.Errorf("unexpected status code %d: %s", response.StatusCode, preview[:min(1024, len(preview))])
+			return ResponseMetadata{}, fmt.Errorf("unexpected status code %d: %s", response.StatusCode, preview[:min(1024, len(preview))])
 		}
 
 		err = json.Unmarshal(responseBytes, &responseBody)
 		if err != nil {
 			var preview = strings.TrimSpace(string(responseBytes))
-			return fmt.Errorf("decode response json (%s): %w", preview[:min(1024, len(preview))], err)
+			return ResponseMetadata{}, fmt.Errorf("decode response json (%s): %w", preview[:min(1024, len(preview))], err)
 		}
 
 		currentTime := time.Now()
@@ -122,14 +123,14 @@ func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{})
 		if responseBody.Error == "" {
 			// TODO: unmarshal loadResponse in the results pointer
 			if err = json.Unmarshal(responseBody.Data, results); err != nil {
-				return fmt.Errorf("unmarshal load response data: %w", err)
+				return responseBody.ResponseMetadata, fmt.Errorf("unmarshal load response data: %w", err)
 			}
 
-			return nil
+			return responseBody.ResponseMetadata, nil
 		} else if responseBody.Error != continueWaitString {
-			return fmt.Errorf("load query results: %s", responseBody.Error)
+			return responseBody.ResponseMetadata, fmt.Errorf("load query results: %s", responseBody.Error)
 		} else if currentTime.Sub(beginTime) > maximumQueryDuration {
-			return fmt.Errorf("maximum query duration (%+v) exceeded after %d attempts", currentTime.Sub(beginTime), attempt)
+			return responseBody.ResponseMetadata, fmt.Errorf("maximum query duration (%+v) exceeded after %d attempts", currentTime.Sub(beginTime), attempt)
 		}
 	}
 }

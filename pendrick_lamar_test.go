@@ -47,8 +47,9 @@ func TestPendrick(t *testing.T) {
 
 	var results []QueryResult
 
-	var err = cubeClient.Load(context.Background(), cubeQuery, &results)
+	var responseMetadata, err = cubeClient.Load(context.Background(), cubeQuery, &results)
 	assert.Nil(t, err)
 
+	fmt.Println("responseMetadata", responseMetadata)
 	fmt.Printf("%+v\n", results)
 }

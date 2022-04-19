@@ -78,10 +78,15 @@ type Filter struct {
 	Values []string `json:"values"`
 }
 
+type ResponseMetadata struct {
+	Query      interface{} `json:"query"`
+	Annotation interface{} `json:"annotation"`
+}
+
 type ResponseBody struct {
-	// Data  []LoadData `json:"data"`
 	Data  json.RawMessage `json:"data"`
 	Error string          `json:"error"`
+	ResponseMetadata
 }
 
 // Is there anything we can do with struct tags and JSON (un?)marshaling
