@@ -1,3 +1,6 @@
+/*
+Package cube implements a simple client for Cube.js.
+*/
 package cube
 
 import (
@@ -15,30 +18,41 @@ import (
 	"go.uber.org/ratelimit"
 )
 
-type CubeClient struct {
-	// TODO: Swap out with anonymous function that can return a string or error
-	accessToken *string
-	cubeURL     url.URL
+// Client
+type Client struct {
+	tokenGenerator AccessTokenGenerator
+	cubeURL        url.URL
 }
 
-func NewCubeClient(cubeURL url.URL, accessToken *string) *CubeClient {
-	return &CubeClient{
-		cubeURL:     cubeURL,
-		accessToken: accessToken,
+type AccessTokenGenerator interface {
+	Get(ctx context.Context) (string, error)
+}
+
+type AccessTokenGeneratorFunc func(ctx context.Context) (string, error)
+
+func (fn AccessTokenGeneratorFunc) Get(ctx context.Context) (string, error) {
+	return fn(ctx)
+}
+
+// NewClient creates a new Cube.js client.
+// The optional tokenGenerator can be used to include an API token with the Cube.js requests.
+func NewClient(cubeURL url.URL, tokenGenerator AccessTokenGenerator) *Client {
+	return &Client{
+		cubeURL:        cubeURL,
+		tokenGenerator: tokenGenerator,
 	}
 }
 
 // TODO: Document
 // Load fetches JSON-encoded data and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error. func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) (interface{}, error) {
 // Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
-func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) error {
+func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{}) error {
 	if err := query.Validate(); err != nil {
 		return fmt.Errorf("invalid Cube query: %w", err)
 	}
 
 	var beginTime = time.Now()
 	var requestBody = requestBody{query}
-	var token = c.accessToken
 
 	marshaledRequestBody, err := json.Marshal(requestBody)
 	if err != nil {
@@ -58,21 +72,26 @@ func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interfac
 		var responseBody ResponseBody
 		attempt++
 
-		var u = c.cubeURL
-		u.Path = cubeLoadPath
-		req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewBuffer(marshaledRequestBody))
+		var url = c.cubeURL
+		url.Path = cubeLoadPath
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), bytes.NewBuffer(marshaledRequestBody))
 		if err != nil {
 			return fmt.Errorf("new request with context: %w", err)
 		}
 
-		// Allow the user to leave off a token
-		// TODO: test
-		if token != nil {
-			req.Header.Set("Authorization", *token)
-		}
 		req.Header.Set("Content-Type", "application/json")
 
+		if c.tokenGenerator != nil {
+			if token, err := c.tokenGenerator.Get(ctx); err != nil {
+				return fmt.Errorf("generate token: %w", err)
+			} else {
+				req.Header.Set("Authorization", token)
+			}
+		}
+
 		limiter.Take()
+		// TODO: Replace with a client with a sensible timeout
+		// https://medium.com/@nate510/don-t-use-go-s-default-http-client-4804cb19f779
 		response, err = http.DefaultClient.Do(req)
 		if err != nil {
 			return fmt.Errorf("do request: %w", err)
