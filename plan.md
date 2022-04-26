@@ -11,7 +11,7 @@ Outline
   - [ ] dogfood code
 - [ ] clean up code
 - [ ] tests?
-- [ ] documentation
+- [x] documentation
   - [x] publicly published Go Docs
     - [x] Just make the repo public and then put this badge in your README `[![Go Reference](https://pkg.go.dev/badge/github.com/TernaryInc/cubejs-go.svg)](https://pkg.go.dev/github.com/TernaryInc/cubejs-go)`
   - [ ] minimal level of stated support
