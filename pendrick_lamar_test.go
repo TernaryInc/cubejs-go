@@ -13,9 +13,7 @@ import (
 type testTokenGenerator struct{}
 
 func (generator testTokenGenerator) Get(ctx context.Context) (string, error) {
-	// TODO: Use test nower?
-	var nower = cube.TimeNower{}
-	tokenGenerator, err := cube.NewCubeTokenGenerator(cube.CubeAPISecret, nower)
+	tokenGenerator, err := NewTokenGenerator(cube.CubeAPISecret)
 	if err != nil {
 		return "", fmt.Errorf("new cube token generator: %w", err)
 	}

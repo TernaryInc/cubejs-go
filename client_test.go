@@ -1,4 +1,4 @@
-package cube
+package cube_test
 
 // import (
 // 	"errors"

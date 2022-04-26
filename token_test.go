@@ -1,4 +1,4 @@
-package cube
+package cube_test
 
 import (
 	"errors"
@@ -17,7 +17,6 @@ type CubeAccessToken struct {
 
 type CubeTokenGenerator struct {
 	cubeAPISecret string
-	time          Nower
 }
 
 type TokenGenerator interface {
@@ -33,18 +32,18 @@ type cubeClaims struct {
 	jwt.StandardClaims
 }
 
-func NewCubeTokenGenerator(cubeAPISecret string, time Nower) (CubeTokenGenerator, error) {
+func NewTokenGenerator(cubeAPISecret string) (CubeTokenGenerator, error) {
 	if cubeAPISecret == "" {
 		return CubeTokenGenerator{}, errors.New("cubeAPISecret cannot be empty")
 	}
 
-	return CubeTokenGenerator{cubeAPISecret: cubeAPISecret, time: time}, nil
+	return CubeTokenGenerator{cubeAPISecret: cubeAPISecret}, nil
 }
 
 // GenerateToken issues a cube token scoped to the passed in tenant ID. Assume all security checks
 // have already passed.
 func (ctg CubeTokenGenerator) GenerateToken(tenantID string) (CubeAccessToken, error) {
-	var expiration = ctg.time.Now().Add(cubeTokenTTL)
+	var expiration = time.Now().Add(cubeTokenTTL)
 	var tokenMaker = jwt.NewWithClaims(jwt.SigningMethodHS256, cubeClaims{
 		// This claim is read by Cube.JS, and entitles the bearer to any BigQuery dataset in data_${tenantID}
 		cubeUserContext: cubeUserContext{

@@ -10,10 +10,7 @@ const (
 	Order_Asc  Order = "asc"
 	Order_Desc Order = "desc"
 
-	// TODO: Pick a link
-	// https://cube.dev/docs/query-format#filters-operators
-	// https://cube.dev/docs/@cubejs-client-core#types-filter-operator
-	// TODO: Test unary operators?
+	// TODO(bruce): Test unary operators?
 	Operator_Equals               Operator = "equals"
 	Operator_NotEquals            Operator = "notEquals"
 	Operator_Contains             Operator = "contains"
@@ -35,7 +32,6 @@ const (
 	// Maximum duration a query should be retried for
 	maximumQueryDuration = time.Duration(time.Minute * 30)
 
-	// https://cube.dev/docs/@cubejs-client-core#types-time-dimension-granularity
 	Granularity_Second  Granularity = "second"
 	Granularity_Minute  Granularity = "minute"
 	Granularity_Hour    Granularity = "hour"
@@ -46,14 +42,20 @@ const (
 	Granularity_Year    Granularity = "year"
 )
 
+// https://cube.dev/docs/@cubejs-client-core#types-time-dimension-granularity
 type Granularity string
+
+// https://cube.dev/docs/@cubejs-client-core#types-filter-operator
 type Operator string
+
+// https://cube.dev/docs/@cubejs-client-core#order
 type Order string
 
 type requestBody struct {
 	Query CubeQuery `json:"query"`
 }
 
+// CubeQuery represents a query that can be issued to a Cube server via the client.
 type CubeQuery struct {
 	Measures       []string        `json:"measures,omitempty"`
 	TimeDimensions []TimeDimension `json:"timeDimensions,omitempty"`
@@ -64,39 +66,41 @@ type CubeQuery struct {
 	Dimensions []string          `json:"dimensions,omitempty"`
 }
 
+// https://cube.dev/docs/query-format#time-dimensions-format
 type TimeDimension struct {
 	Dimension string `json:"dimension"`
 	// TODO: Document interface{} or choose something else
 	DateRange   interface{} `json:"dateRange"`
-	Granularity string      `json:"granularity"`
+	Granularity Granularity `json:"granularity"`
 }
 
+// https://cube.dev/docs/@cubejs-client-core#order
 type Filter struct {
-	Member   string `json:"member"`
-	Operator string `json:"operator"`
-	// TODO(omitempty?)
+	Member   string   `json:"member"`
+	Operator Operator `json:"operator"`
+	// TODO(Bruce): omitempty?
 	Values []string `json:"values"`
 }
 
+// ResponseMetadata returns metadata that appears in the response from the
+// Cube API that is not the requested data.
 type ResponseMetadata struct {
 	Query      interface{} `json:"query"`
 	Annotation interface{} `json:"annotation"`
 }
 
-type ResponseBody struct {
+type responseBody struct {
 	Data  json.RawMessage `json:"data"`
 	Error string          `json:"error"`
 	ResponseMetadata
 }
 
-// Is there anything we can do with struct tags and JSON (un?)marshaling
-type LoadData map[string]interface{}
-
-type CubeError struct {
+type cubeError struct {
 	ErrorMessage string
 	StatusCode   int
 }
 
+// Validate determines whether the input query is valid.
 func (query CubeQuery) Validate() error {
 	for _, timeDimension := range query.TimeDimensions {
 		if err := timeDimension.Validate(); err != nil {
@@ -107,6 +111,8 @@ func (query CubeQuery) Validate() error {
 	return nil
 }
 
+// Validate determines whether the input time dimension is valid.
+// The date range of a time dimension can either be a string or an array of strings of length two.
 func (timeDimension TimeDimension) Validate() error {
 	if _, ok := timeDimension.DateRange.(string); ok {
 		return nil
@@ -133,10 +139,6 @@ func (timeDimension TimeDimension) Validate() error {
 	return fmt.Errorf("unsupported type for time dimension date range (value: %+v) (type: %T)", timeDimension.DateRange, timeDimension.DateRange)
 }
 
-func (ce *CubeError) Error() string {
+func (ce *cubeError) Error() string {
 	return fmt.Sprintf("StatusCode: %v ErrorMessage: %v", ce.StatusCode, ce.ErrorMessage)
 }
-
-// func FormatDateRange(begin, end time.Time) string {
-// 	return fmt.Sprintf("%v to %v", begin.Format("2006-01-02"), end.Format("2006-01-02"))
-// }

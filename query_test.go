@@ -1,8 +1,9 @@
-package cube
+package cube_test
 
 import (
 	"testing"
 
+	cube "github.com/TernaryInc/cubejs-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -144,7 +145,7 @@ func Test_ValidateTimeDimension(t *testing.T) {
 	}
 
 	for _, tcase := range battery {
-		var timeDimension = TimeDimension{
+		var timeDimension = cube.TimeDimension{
 			DateRange: tcase.dateRange,
 		}
 

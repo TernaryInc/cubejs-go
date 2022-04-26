@@ -18,18 +18,24 @@ import (
 	"go.uber.org/ratelimit"
 )
 
-// Client
+// Client is a client for interacting with Cube.js.
+// Clients can be reused instead of created as needed.
+// The methods of Client are safe for concurrent use by multiple goroutines.
 type Client struct {
 	tokenGenerator AccessTokenGenerator
 	cubeURL        url.URL
 }
 
+// AccessTokenGenerator defines the interface for specifying access tokens which should be included in authenticated requests to the Cube.js server.
 type AccessTokenGenerator interface {
 	Get(ctx context.Context) (string, error)
 }
 
+// AccessTokenGeneratorFunc defines a simple concrete type which can satisfy the AccessTokenGenerator interface.
+// This type is only one of many options, and users may define their own implementations of the interface.
 type AccessTokenGeneratorFunc func(ctx context.Context) (string, error)
 
+// Get generates an AccessToken or a non-nil error if it cannot.
 func (fn AccessTokenGeneratorFunc) Get(ctx context.Context) (string, error) {
 	return fn(ctx)
 }
@@ -43,8 +49,7 @@ func NewClient(cubeURL url.URL, tokenGenerator AccessTokenGenerator) *Client {
 	}
 }
 
-// TODO: Document
-// Load fetches JSON-encoded data and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error. func (c *CubeClient) Load(ctx context.Context, query CubeQuery, results interface{}) (interface{}, error) {
+// Load fetches JSON-encoded data and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error.
 // Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
 func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{}) (ResponseMetadata, error) {
 	if err := query.Validate(); err != nil {
@@ -69,7 +74,7 @@ func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{})
 
 	for {
 		var response *http.Response
-		var responseBody ResponseBody
+		var responseBody responseBody
 		attempt++
 
 		var url = c.cubeURL
@@ -133,4 +138,13 @@ func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{})
 			return responseBody.ResponseMetadata, fmt.Errorf("maximum query duration (%+v) exceeded after %d attempts", currentTime.Sub(beginTime), attempt)
 		}
 	}
+}
+
+// min returns the minimum of the two input ints
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+
+	return b
 }
