@@ -105,59 +105,82 @@ import (
 // 	}
 // }
 
-func Test_ValidateTimeDimension(t *testing.T) {
+func boxString(x string) *string { return &x }
+
+func Test_DateRangeMarshalJSON(t *testing.T) {
 	var battery = []struct {
-		dateRange interface{}
-		valid     bool
+		dateRange cube.DateRange
+		expected  *string
 	}{
-		{
-			dateRange: []string{"length one"},
-			valid:     false,
-		},
-		{
-			dateRange: []string{"length", "is", "three"},
-			valid:     false,
-		},
-		{
-			dateRange: []string{"length", "two"},
-			valid:     true,
-		},
-		{
-			dateRange: "just a string",
-			valid:     true,
-		},
-		{
-			dateRange: 1337,
-			valid:     false,
-		},
-		{
-			dateRange: []float64{1, 2},
-			valid:     false,
-		},
-		{
-			dateRange: []interface{}{"asdf", 2},
-			valid:     false,
-		},
-		{
-			dateRange: []interface{}{"also", "two"},
-			valid:     true,
-		},
+		{cube.DateRange{RelativeRange: boxString("two weeks ago")}, boxString(`"two weeks ago"`)},
+		{cube.DateRange{AbsoluteRange: []string{"2021-04-20", "2021-04-21"}}, boxString(`["2021-04-20","2021-04-21"]`)},
+		{cube.DateRange{RelativeRange: boxString("two weeks ago"), AbsoluteRange: []string{"2021-04-20", "2021-04-21"}}, nil},
+		{cube.DateRange{}, nil},
 	}
 
 	for _, tcase := range battery {
-		var timeDimension = cube.TimeDimension{
-			DateRange: tcase.dateRange,
-		}
-
-		var err = timeDimension.Validate()
-
-		if tcase.valid {
-			assert.Nil(t, err)
+		var actual, err = tcase.dateRange.MarshalJSON()
+		if tcase.expected == nil {
+			assert.NotNil(t, err)
 		} else {
-			assert.Error(t, err)
+			assert.Equal(t, *tcase.expected, string(actual))
 		}
 	}
 }
+
+// func Test_ValidateTimeDimension(t *testing.T) {
+// 	var battery = []struct {
+// 		dateRange interface{}
+// 		valid     bool
+// 	}{
+// 		{
+// 			dateRange: []string{"length one"},
+// 			valid:     false,
+// 		},
+// 		{
+// 			dateRange: []string{"length", "is", "three"},
+// 			valid:     false,
+// 		},
+// 		{
+// 			dateRange: []string{"length", "two"},
+// 			valid:     true,
+// 		},
+// 		{
+// 			dateRange: "just a string",
+// 			valid:     true,
+// 		},
+// 		{
+// 			dateRange: 1337,
+// 			valid:     false,
+// 		},
+// 		{
+// 			dateRange: []float64{1, 2},
+// 			valid:     false,
+// 		},
+// 		{
+// 			dateRange: []interface{}{"asdf", 2},
+// 			valid:     false,
+// 		},
+// 		{
+// 			dateRange: []interface{}{"also", "two"},
+// 			valid:     true,
+// 		},
+// 	}
+
+// 	for _, tcase := range battery {
+// 		var timeDimension = cube.TimeDimension{
+// 			DateRange: tcase.dateRange,
+// 		}
+
+// 		var err = timeDimension.Validate()
+
+// 		if tcase.valid {
+// 			assert.Nil(t, err)
+// 		} else {
+// 			assert.Error(t, err)
+// 		}
+// 	}
+// }
 
 // func Test_Daily_Spend(t *testing.T) {
 // 	tcases := []struct {

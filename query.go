@@ -11,6 +11,7 @@ const (
 	Order_Desc Order = "desc"
 
 	// TODO(bruce): Test unary operators?
+	// Boolean logical operators currently unsupported: https://cube.dev/docs/query-format#filters-operators
 	Operator_Equals               Operator = "equals"
 	Operator_NotEquals            Operator = "notEquals"
 	Operator_Contains             Operator = "contains"
@@ -25,7 +26,6 @@ const (
 	Operator_NotInDateRange       Operator = "notInDateRange"
 	Operator_BeforeDate           Operator = "beforeDate"
 	Operator_AfterDate            Operator = "afterDate"
-	// Boolean logical operators currently unsupported: https://cube.dev/docs/query-format#filters-operators
 
 	cubeLoadPath = "/cubejs-api/v1/load"
 
@@ -68,9 +68,8 @@ type CubeQuery struct {
 
 // https://cube.dev/docs/query-format#time-dimensions-format
 type TimeDimension struct {
-	Dimension string `json:"dimension"`
-	// TODO: Document interface{} or choose something else
-	DateRange   interface{} `json:"dateRange"`
+	Dimension   string      `json:"dimension"`
+	DateRange   DateRange   `json:"dateRange"`
 	Granularity Granularity `json:"granularity"`
 }
 
@@ -100,45 +99,23 @@ type cubeError struct {
 	StatusCode   int
 }
 
-// Validate determines whether the input query is valid.
-func (query CubeQuery) Validate() error {
-	for _, timeDimension := range query.TimeDimensions {
-		if err := timeDimension.Validate(); err != nil {
-			return fmt.Errorf("invalid time dimension: %w", err)
-		}
-	}
-
-	return nil
+// DateRange represents the (string|[]string) date range type in the Cube.js query format.
+// https://cube.dev/docs/query-format
+// https://cube.dev/docs/@cubejs-client-core#date-range
+//
+// This is a union type and only one field should be set.
+type DateRange struct {
+	RelativeRange *string
+	AbsoluteRange []string
 }
 
-// Validate determines whether the input time dimension is valid.
-// The date range of a time dimension can either be a string or an array of strings of length two.
-func (timeDimension TimeDimension) Validate() error {
-	if _, ok := timeDimension.DateRange.(string); ok {
-		return nil
-	} else if arr, ok := timeDimension.DateRange.([]string); ok {
-		if len(arr) != 2 {
-			return fmt.Errorf("date range with array type must have length two, got %d", len(arr))
-		}
-
-		return nil
-	} else if arr, ok := timeDimension.DateRange.([]interface{}); ok {
-		if len(arr) != 2 {
-			return fmt.Errorf("date range with array type must have length two")
-		}
-
-		for _, arrayElement := range arr {
-			if _, ok := arrayElement.(string); !ok {
-				return fmt.Errorf("date range with array type must have string entries.  got %+v, type %T", arrayElement, arrayElement)
-			}
-		}
-
-		return nil
+// MarshalJSON marshals the input DateRange object; only one of the fields (i.e. RelativeRange, AbsoluteRange) will be marshalled as a top-level JSON value, depending on which is set.
+func (d DateRange) MarshalJSON() ([]byte, error) {
+	if d.RelativeRange != nil && d.AbsoluteRange == nil {
+		return json.Marshal(d.RelativeRange)
+	} else if len(d.AbsoluteRange) > 0 && d.RelativeRange == nil {
+		return json.Marshal(d.AbsoluteRange)
+	} else {
+		return []byte{}, fmt.Errorf("invalid date range: exactly one field must be set: %+v", d)
 	}
-
-	return fmt.Errorf("unsupported type for time dimension date range (value: %+v) (type: %T)", timeDimension.DateRange, timeDimension.DateRange)
-}
-
-func (ce *cubeError) Error() string {
-	return fmt.Sprintf("StatusCode: %v ErrorMessage: %v", ce.StatusCode, ce.ErrorMessage)
 }

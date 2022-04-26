@@ -36,6 +36,18 @@ func TestPendrick(t *testing.T) {
 	var cubeQuery = cube.CubeQuery{
 		Measures:   []string{"GCPBillingDaily.cost"},
 		Dimensions: []string{"GCPBillingDaily.projectId"},
+		TimeDimensions: []cube.TimeDimension{
+			{
+				Dimension: "GCPBillingDaily.timestamp",
+				DateRange: cube.DateRange{
+					AbsoluteRange: []string{
+						"2022-04-01",
+						"2022-04-20",
+					},
+				},
+				Granularity: cube.Granularity_Day,
+			},
+		},
 	}
 
 	type QueryResult struct {
