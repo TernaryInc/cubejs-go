@@ -52,11 +52,11 @@ type Operator string
 type Order string
 
 type requestBody struct {
-	Query CubeQuery `json:"query"`
+	Query Query `json:"query"`
 }
 
-// CubeQuery represents a query that can be issued to a Cube server via the client.
-type CubeQuery struct {
+// Query represents a query that can be issued to a Cube server via the client.
+type Query struct {
 	Measures       []string        `json:"measures,omitempty"`
 	TimeDimensions []TimeDimension `json:"timeDimensions,omitempty"`
 	// TODO: Why is this a map[string]string?

@@ -27,7 +27,7 @@ func TestLocalServer() error {
 
 	var cubeClient = cube.NewClient(u, tokenGenerator)
 
-	var cubeQuery = cube.CubeQuery{
+	var cubeQuery = cube.Query{
 		Measures:   []string{"MyCube.measure1"},
 		Dimensions: []string{"MyCube.dimension1"},
 		TimeDimensions: []cube.TimeDimension{

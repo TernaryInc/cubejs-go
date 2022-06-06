@@ -51,7 +51,7 @@ func NewClient(cubeURL url.URL, tokenGenerator AccessTokenGenerator) *Client {
 
 // Load fetches JSON-encoded data and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error.
 // Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
-func (c *Client) Load(ctx context.Context, query CubeQuery, results interface{}) (ResponseMetadata, error) {
+func (c *Client) Load(ctx context.Context, query Query, results interface{}) (ResponseMetadata, error) {
 	var beginTime = time.Now()
 	var requestBody = requestBody{query}
 
