@@ -9,8 +9,6 @@
 - [Introduction](#introduction)
 - [Support](#support)
 - [Example](#example)
-- [Contributing](#contributing)
-- [Maintainers](#maintainers)
 
 ## Introduction
 
@@ -28,21 +26,3 @@ We've intended to build the subset of functionality that we need into the Cube c
 
     take example from Pendrick test
     mention that you have to have Cube running locally
-
-## Contributing
-
-Anybody is welcome to contribute to the Golang Cube.js client. Please feel free to open an issue and/or a PR regarding existing feature implementations and potential bugs or requests/submissions for new features that are not currently supported. A representative from Ternary will review and help iterate.
-
-## Maintainers
-
-> Bruce Szudera Wienand
->
-> Email: bruce@ternary.app
->
-> GitHub: @brucesw
-
-> Alan Cham
->
-> Email: alan@ternary.app
->
-> GitHub: @acham1

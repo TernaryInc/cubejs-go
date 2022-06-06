@@ -24,13 +24,15 @@ Outline
     - [ ] Cube: https://github.com/cube-js/cube.js
 - [ ] set up CI/CD
   - [ ] GitHub CI/CD shoud be free
-    [ ] - GitHub: https://resources.github.com/ci-cd/
-    [ ] - We can just run Go unit tests https://gfgfddgleb.medium.com/how-to-test-your-go-code-with-github-actions-f15881d46089
+        [ ] - GitHub: https://resources.github.com/ci-cd/
+        [ ] - We can just run Go unit tests https://gfgfddgleb.medium.com/how-to-test-your-go-code-with-github-actions-f15881d46089
 - [x] find and use license
   - Cube uses Apache, we should too
   - Cube: https://github.com/cube-js/cube.js/blob/master/LICENSE
 - punt on versioning
   - although, might be as easy as just creating a GitHub Release
+- [x] separate contributing and maintainers to .md files
+- [ ] clean up example in README
 
 Notes: https://docs.google.com/document/d/1WW314P45rTUvfF9BH78UGyA1dJM_El7RI0jlzsRKD0E/edit
 
