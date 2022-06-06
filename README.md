@@ -16,4 +16,4 @@
 
 ## Support
 
-We've intended to build the subset of functionality that we need into the Cube client presented. We recognize that not all of the functionality available to the Javascript client has been ported, but we plan to expand feature support as find it necessary. Contributions are always welcome; see [Contributing](#contributing).
+We've intended to build the subset of functionality that we need at Ternary into the Cube client presented. We recognize that not all of the functionality available to the Javascript client has been ported, but we plan to expand feature support as find it necessary. Contributions are always welcome; see [Contributing](contributing.md).

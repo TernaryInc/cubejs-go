@@ -15,11 +15,11 @@ Outline
   - [x] publicly published Go Docs
     - [x] Just make the repo public and then put this badge in your README `[![Go Reference](https://pkg.go.dev/badge/github.com/TernaryInc/cubejs-go.svg)](https://pkg.go.dev/github.com/TernaryInc/cubejs-go)`
   - [ ] minimal level of stated support
-  - [ ] README
-  - [ ] examples, point to Go Docs
-    - [ ] how to instantiate a client
-    - [ ] how to make a query
-    - [ ] how to use the results
+  - [x] README
+  - [x] examples, point to Go Docs
+    - [x] how to instantiate a client
+    - [x] how to make a query
+    - [x] how to use the results
   - [ ] **look at the Cube.js official client!**
     - [ ] Cube: https://github.com/cube-js/cube.js
 - [ ] set up CI/CD
