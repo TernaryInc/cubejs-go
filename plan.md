@@ -9,23 +9,18 @@ Outline
   - [x] go mod init
 - [x] separate code into new repo
   - [ ] dogfood code
-- [ ] clean up code
-- [ ] tests?
+- [x] clean up code
+- [ ] enumerate tests
+- [ ] write tests
 - [x] documentation
   - [x] publicly published Go Docs
     - [x] Just make the repo public and then put this badge in your README `[![Go Reference](https://pkg.go.dev/badge/github.com/TernaryInc/cubejs-go.svg)](https://pkg.go.dev/github.com/TernaryInc/cubejs-go)`
-  - [ ] minimal level of stated support
+  - [x] minimal level of stated support
   - [x] README
   - [x] examples, point to Go Docs
     - [x] how to instantiate a client
     - [x] how to make a query
     - [x] how to use the results
-  - [ ] **look at the Cube.js official client!**
-    - [ ] Cube: https://github.com/cube-js/cube.js
-- [ ] set up CI/CD
-  - [ ] GitHub CI/CD shoud be free
-        [ ] - GitHub: https://resources.github.com/ci-cd/
-        [ ] - We can just run Go unit tests https://gfgfddgleb.medium.com/how-to-test-your-go-code-with-github-actions-f15881d46089
 - [x] find and use license
   - Cube uses Apache, we should too
   - Cube: https://github.com/cube-js/cube.js/blob/master/LICENSE
