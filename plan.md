@@ -32,7 +32,7 @@ Outline
 - punt on versioning
   - although, might be as easy as just creating a GitHub Release
 - [x] separate contributing and maintainers to .md files
-- [ ] clean up example in README
+- [x] clean up example in README
 
 Notes: https://docs.google.com/document/d/1WW314P45rTUvfF9BH78UGyA1dJM_El7RI0jlzsRKD0E/edit
 
