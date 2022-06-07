@@ -28,6 +28,7 @@ Outline
   - although, might be as easy as just creating a GitHub Release
 - [x] separate contributing and maintainers to .md files
 - [x] clean up example in README
+- [ ] clean up TODOs in GoDocs
 
 Notes: https://docs.google.com/document/d/1WW314P45rTUvfF9BH78UGyA1dJM_El7RI0jlzsRKD0E/edit
 
