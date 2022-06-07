@@ -104,6 +104,14 @@ type DateRange struct {
 	AbsoluteRange []string
 }
 
+// RelativeDateRange returns a DateRange with the RelativeRange field set to the input string
+// Example arguments: "last 7 days", "this month", "1 hour ago"
+func RelativeDateRange(rang string) DateRange {
+	return DateRange{
+		RelativeRange: &rang,
+	}
+}
+
 // MarshalJSON marshals the input DateRange object; only one of the fields (i.e. RelativeRange, AbsoluteRange) will be marshalled as a top-level JSON value, depending on which is set.
 func (d DateRange) MarshalJSON() ([]byte, error) {
 	if d.RelativeRange != nil && d.AbsoluteRange == nil {
