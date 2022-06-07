@@ -122,7 +122,6 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 		currentTime := time.Now()
 
 		if responseBody.Error == "" {
-			// TODO: unmarshal loadResponse in the results pointer
 			if err = json.Unmarshal(responseBody.Data, results); err != nil {
 				return responseBody.ResponseMetadata, fmt.Errorf("unmarshal load response data: %w", err)
 			}
