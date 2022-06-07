@@ -94,11 +94,6 @@ type responseBody struct {
 	ResponseMetadata
 }
 
-type cubeError struct {
-	ErrorMessage string
-	StatusCode   int
-}
-
 // DateRange represents the (string|[]string) date range type in the Cube.js query format.
 // https://cube.dev/docs/query-format
 // https://cube.dev/docs/@cubejs-client-core#date-range
