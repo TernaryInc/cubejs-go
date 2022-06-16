@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"go.uber.org/ratelimit"
+
+	jsontime "github.com/liamylian/jsontime/v2/v2"
 )
 
 // Client is a client for interacting with Cube.js.
@@ -122,7 +124,9 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 		currentTime := time.Now()
 
 		if responseBody.Error == "" {
-			if err = json.Unmarshal(responseBody.Data, results); err != nil {
+			jsontime.SetDefaultTimeFormat("2006-01-02T15:04:05.000", time.UTC)
+			var jsonTime = jsontime.ConfigWithCustomTimeFormat
+			if err = jsonTime.Unmarshal(responseBody.Data, results); err != nil {
 				return responseBody.ResponseMetadata, fmt.Errorf("unmarshal load response data: %w", err)
 			}
 
