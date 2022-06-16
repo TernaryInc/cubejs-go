@@ -57,13 +57,12 @@ type requestBody struct {
 
 // Query represents a query that can be issued to a Cube server via the client.
 type Query struct {
-	Measures       []string        `json:"measures,omitempty"`
-	TimeDimensions []TimeDimension `json:"timeDimensions,omitempty"`
-	// TODO: Why is this a map[string]string?
-	Order      map[string]string `json:"order,omitempty"`
-	Limit      int               `json:"limit,omitempty"`
-	Filters    []Filter          `json:"filters,omitempty"`
-	Dimensions []string          `json:"dimensions,omitempty"`
+	Measures       []string         `json:"measures,omitempty"`
+	TimeDimensions []TimeDimension  `json:"timeDimensions,omitempty"`
+	Order          map[string]Order `json:"order,omitempty"`
+	Limit          int              `json:"limit,omitempty"`
+	Filters        []Filter         `json:"filters,omitempty"`
+	Dimensions     []string         `json:"dimensions,omitempty"`
 }
 
 // https://cube.dev/docs/query-format#time-dimensions-format
