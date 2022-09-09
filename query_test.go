@@ -7,8 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func boxString(x string) *string { return &x }
-
 func Test_DateRangeMarshalJSON(t *testing.T) {
 	var battery = []struct {
 		dateRange cube.DateRange
@@ -44,3 +42,5 @@ func Test_DateRangeMarshalJSON(t *testing.T) {
 		}
 	}
 }
+
+func boxString(x string) *string { return &x }

@@ -7,10 +7,14 @@ import (
 )
 
 const (
+	cubeLoadPath = "/cubejs-api/v1/load"
+
+	// Maximum duration a query should be retried for
+	maximumQueryDuration = time.Duration(time.Minute * 30)
+
 	Order_Asc  Order = "asc"
 	Order_Desc Order = "desc"
 
-	// TODO(bruce): Test unary operators?
 	// Boolean logical operators currently unsupported: https://cube.dev/docs/query-format#filters-operators
 	Operator_Equals               Operator = "equals"
 	Operator_NotEquals            Operator = "notEquals"
@@ -26,11 +30,6 @@ const (
 	Operator_NotInDateRange       Operator = "notInDateRange"
 	Operator_BeforeDate           Operator = "beforeDate"
 	Operator_AfterDate            Operator = "afterDate"
-
-	cubeLoadPath = "/cubejs-api/v1/load"
-
-	// Maximum duration a query should be retried for
-	maximumQueryDuration = time.Duration(time.Minute * 30)
 
 	Granularity_Second  Granularity = "second"
 	Granularity_Minute  Granularity = "minute"
@@ -76,8 +75,7 @@ type TimeDimension struct {
 type Filter struct {
 	Member   string   `json:"member"`
 	Operator Operator `json:"operator"`
-	// TODO(Bruce): omitempty?
-	Values []string `json:"values"`
+	Values   []string `json:"values"`
 }
 
 // ResponseMetadata returns metadata that appears in the response from the
@@ -93,7 +91,7 @@ type responseBody struct {
 	ResponseMetadata
 }
 
-// DateRange represents the (string|[]string) date range type in the Cube.js query format.
+// DateRange represents the (string|[]string) date range type in the Cube query format.
 // https://cube.dev/docs/query-format
 // https://cube.dev/docs/@cubejs-client-core#date-range
 //
@@ -105,9 +103,9 @@ type DateRange struct {
 
 // RelativeDateRange returns a DateRange with the RelativeRange field set to the input string
 // Example arguments: "last 7 days", "this month", "1 hour ago"
-func RelativeDateRange(rang string) DateRange {
+func RelativeDateRange(dateRange string) DateRange {
 	return DateRange{
-		RelativeRange: &rang,
+		RelativeRange: &dateRange,
 	}
 }
 
