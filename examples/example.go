@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"time"
 
 	cube "github.com/TernaryInc/cubejs-go"
 )
@@ -45,8 +46,9 @@ func TestLocalServer() error {
 	}
 
 	type QueryResult struct {
-		Cost      float64 `json:"MyCube.measure1"`
-		ProjectID string  `json:"MyCube.dimension1"`
+		Cost      float64   `json:"MyCube.measure1"`
+		ProjectID string    `json:"MyCube.dimension1"`
+		Timestamp time.Time `json:"MyCube.timestamp"`
 	}
 
 	var results []QueryResult

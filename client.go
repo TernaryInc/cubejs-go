@@ -1,5 +1,5 @@
 /*
-Package cube implements a simple client for Cube.js.
+Package cube implements a simple client for Cube.
 */
 package cube
 
@@ -20,7 +20,7 @@ import (
 	jsontime "github.com/liamylian/jsontime/v2/v2"
 )
 
-// Client is a client for interacting with Cube.js.
+// Client is a client for interacting with Cube.
 // Clients can be reused instead of created as needed.
 // The methods of Client are safe for concurrent use by multiple goroutines.
 type Client struct {
@@ -28,7 +28,7 @@ type Client struct {
 	cubeURL        url.URL
 }
 
-// AccessTokenGenerator defines the interface for specifying access tokens which should be included in authenticated requests to the Cube.js server.
+// AccessTokenGenerator defines the interface for specifying access tokens which should be included in authenticated requests to the Cube server.
 type AccessTokenGenerator interface {
 	Get(ctx context.Context) (string, error)
 }
@@ -42,8 +42,8 @@ func (fn AccessTokenGeneratorFunc) Get(ctx context.Context) (string, error) {
 	return fn(ctx)
 }
 
-// NewClient creates a new Cube.js client.
-// The optional tokenGenerator can be used to include an API token with the Cube.js requests.
+// NewClient creates a new Cube client.
+// The optional tokenGenerator can be used to include an API token with the Cube requests.
 func NewClient(cubeURL url.URL, tokenGenerator AccessTokenGenerator) *Client {
 	return &Client{
 		cubeURL:        cubeURL,
@@ -51,7 +51,7 @@ func NewClient(cubeURL url.URL, tokenGenerator AccessTokenGenerator) *Client {
 	}
 }
 
-// Load fetches JSON-encoded data and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error.
+// Load fetches JSON-encoded data from the Cube API and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error.
 // Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
 func (c *Client) Load(ctx context.Context, query Query, results interface{}) (ResponseMetadata, error) {
 	var beginTime = time.Now()
@@ -66,7 +66,7 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 		attempt            = 0
 		continueWaitString = "Continue wait"
 		// Do not spam Cube server with requests that will likely take some time
-		// TODO(bruce): Replace with exponential backoff rate limiter
+		// TODO: Replace with exponential backoff rate limiter
 		limiter = ratelimit.New(1, ratelimit.Per(time.Minute))
 	)
 
@@ -124,6 +124,7 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 		currentTime := time.Now()
 
 		if responseBody.Error == "" {
+			// TODO: Move into init func
 			jsontime.SetDefaultTimeFormat("2006-01-02T15:04:05.000", time.UTC)
 			var jsonTime = jsontime.ConfigWithCustomTimeFormat
 			if err = jsonTime.Unmarshal(responseBody.Data, results); err != nil {
