@@ -50,18 +50,40 @@ type Operator string
 // https://cube.dev/docs/@cubejs-client-core#order
 type Order string
 
+type OrderTuple struct {
+	Key   string
+	Order Order
+}
+
+func (t OrderTuple) MarshalJSON() ([]byte, error) {
+	return json.Marshal([]string{t.Key, string(t.Order)})
+}
+
+func (t *OrderTuple) UnmarshalJSON(byts []byte) error {
+	tmp := [2]string{}
+
+	err := json.Unmarshal(byts, &tmp)
+	if err != nil {
+		return fmt.Errorf("unmarshal bytes into string array: %w", err)
+	}
+
+	t.Key = tmp[0]
+	t.Order = Order(tmp[1])
+	return nil
+}
+
 type requestBody struct {
 	Query Query `json:"query"`
 }
 
 // Query represents a query that can be issued to a Cube server via the client.
 type Query struct {
-	Measures       []string         `json:"measures,omitempty"`
-	TimeDimensions []TimeDimension  `json:"timeDimensions,omitempty"`
-	Order          map[string]Order `json:"order,omitempty"`
-	Limit          int              `json:"limit,omitempty"`
-	Filters        []Filter         `json:"filters,omitempty"`
-	Dimensions     []string         `json:"dimensions,omitempty"`
+	Measures       []string        `json:"measures,omitempty"`
+	TimeDimensions []TimeDimension `json:"timeDimensions,omitempty"`
+	Order          []OrderTuple    `json:"order,omitempty"`
+	Limit          int             `json:"limit,omitempty"`
+	Filters        []Filter        `json:"filters,omitempty"`
+	Dimensions     []string        `json:"dimensions,omitempty"`
 }
 
 // https://cube.dev/docs/query-format#time-dimensions-format

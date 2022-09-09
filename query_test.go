@@ -1,6 +1,7 @@
 package cube_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	cube "github.com/TernaryInc/cubejs-go"
@@ -40,6 +41,67 @@ func Test_DateRangeMarshalJSON(t *testing.T) {
 		} else {
 			assert.Equal(t, *tcase.expected, string(actual))
 		}
+	}
+}
+
+func Test_OrderTupleMarshalJSON(t *testing.T) {
+	var battery = []struct {
+		orderArray []cube.OrderTuple
+		expected   string
+	}{
+		{
+			[]cube.OrderTuple{{Key: "key", Order: cube.Order_Asc}},
+			`[["key","asc"]]`,
+		},
+		{
+			[]cube.OrderTuple{{Key: "key1", Order: cube.Order_Asc}, {Key: "key2", Order: cube.Order_Desc}},
+			`[["key1","asc"],["key2","desc"]]`,
+		},
+		{
+			nil,
+			`null`,
+		},
+		{
+			[]cube.OrderTuple{},
+			`[]`,
+		},
+	}
+
+	for _, tcase := range battery {
+		var actual, err = json.Marshal(tcase.orderArray)
+		assert.Nil(t, err)
+		assert.Equal(t, tcase.expected, string(actual))
+	}
+}
+
+func Test_OrderTupleUnmarshalJSON(t *testing.T) {
+	var battery = []struct {
+		jsonstr  string
+		expected []cube.OrderTuple
+	}{
+		{
+			`[["key","asc"]]`,
+			[]cube.OrderTuple{{Key: "key", Order: cube.Order_Asc}},
+		},
+		{
+			`[["key1","asc"],["key2","desc"]]`,
+			[]cube.OrderTuple{{Key: "key1", Order: cube.Order_Asc}, {Key: "key2", Order: cube.Order_Desc}},
+		},
+		{
+			`null`,
+			nil,
+		},
+		{
+			`[]`,
+			[]cube.OrderTuple{},
+		},
+	}
+
+	for _, tcase := range battery {
+		var actual []cube.OrderTuple
+		var err = json.Unmarshal([]byte(tcase.jsonstr), &actual)
+		assert.Nil(t, err)
+		assert.Equal(t, tcase.expected, actual)
 	}
 }
 
