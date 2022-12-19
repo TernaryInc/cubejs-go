@@ -94,9 +94,12 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 
 		limiter.Take()
 
-		// TODO: Replace with a client with a sensible timeout
-		// https://medium.com/@nate510/don-t-use-go-s-default-http-client-4804cb19f779
-		response, err = http.DefaultClient.Do(req)
+		// Default timeout for queries is 10 minutes per cubejs documentation
+		// https://cube.dev/docs/config#queue-options
+		var netClient = &http.Client{
+  			Timeout: time.Minute * 10,
+		}
+		response, err = netClient.Do(req)
 		if err != nil {
 			return ResponseMetadata{}, fmt.Errorf("do request: %w", err)
 		}
