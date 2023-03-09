@@ -90,7 +90,7 @@ type Query struct {
 type TimeDimension struct {
 	Dimension   string      `json:"dimension"`
 	DateRange   DateRange   `json:"dateRange"`
-	Granularity Granularity `json:"granularity"`
+	Granularity Granularity `json:"granularity,omitempty"`
 }
 
 // https://cube.dev/docs/@cubejs-client-core#order
