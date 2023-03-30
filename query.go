@@ -84,6 +84,7 @@ type Query struct {
 	Limit          int             `json:"limit,omitempty"`
 	Filters        []Filter        `json:"filters,omitempty"`
 	Dimensions     []string        `json:"dimensions,omitempty"`
+	Ungrouped      bool            `json:"ungrouped"`
 }
 
 // https://cube.dev/docs/query-format#time-dimensions-format
