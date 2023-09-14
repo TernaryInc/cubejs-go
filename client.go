@@ -76,7 +76,7 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 		attempt++
 
 		var url = c.cubeURL
-		url.Path = cubeLoadPath
+		url.Path += cubeLoadPath
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), bytes.NewBuffer(marshaledRequestBody))
 		if err != nil {
 			return ResponseMetadata{}, fmt.Errorf("new request with context: %w", err)
@@ -97,7 +97,7 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 		// Default timeout for queries is 10 minutes per cubejs documentation
 		// https://cube.dev/docs/config#queue-options
 		var netClient = &http.Client{
-  			Timeout: time.Minute * 10,
+			Timeout: time.Minute * 10,
 		}
 		response, err = netClient.Do(req)
 		if err != nil {
