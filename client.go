@@ -51,11 +51,6 @@ func NewClient(cubeURL url.URL, tokenGenerator AccessTokenGenerator) *Client {
 	}
 }
 
-// Return the base URL path for the Cube service.
-func (c *Client) CubeRESTAPIBasePath() string {
-	return c.cubeURL.Path + "/cubejs-api/v1"
-}
-
 // Load fetches JSON-encoded data from the Cube API and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error.
 // Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
 func (c *Client) Load(ctx context.Context, query Query, results interface{}) (ResponseMetadata, error) {
@@ -81,7 +76,7 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 		attempt++
 
 		var url = c.cubeURL
-		url.Path = c.CubeRESTAPIBasePath() + "/load"
+		url.Path += cubeLoadPath
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), bytes.NewBuffer(marshaledRequestBody))
 		if err != nil {
 			return ResponseMetadata{}, fmt.Errorf("new request with context: %w", err)
