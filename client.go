@@ -24,8 +24,9 @@ import (
 // Clients can be reused instead of created as needed.
 // The methods of Client are safe for concurrent use by multiple goroutines.
 type Client struct {
-	tokenGenerator AccessTokenGenerator
+	cubeLoadPath   string
 	cubeURL        url.URL
+	tokenGenerator AccessTokenGenerator
 }
 
 // AccessTokenGenerator defines the interface for specifying access tokens which should be included in authenticated requests to the Cube server.
@@ -46,10 +47,14 @@ func (fn AccessTokenGeneratorFunc) Get(ctx context.Context) (string, error) {
 // The optional tokenGenerator can be used to include an API token with the Cube requests.
 func NewClient(cubeURL url.URL, tokenGenerator AccessTokenGenerator) *Client {
 	return &Client{
+		cubeLoadPath:   defaultCubeLoadPath,
 		cubeURL:        cubeURL,
 		tokenGenerator: tokenGenerator,
 	}
 }
+
+func (c *Client) SetLoadPath(path string) { c.cubeLoadPath = path }
+func (c *Client) GetLoadPath() string     { return c.cubeLoadPath }
 
 // Load fetches JSON-encoded data from the Cube API and stores the result in the value pointed to by `results`. If `results` is nil or not a pointer, Load returns an error.
 // Load uses the decodings that json.Unmarshal uses, allocating maps, slices, and pointers as necessary.
@@ -76,7 +81,7 @@ func (c *Client) Load(ctx context.Context, query Query, results interface{}) (Re
 		attempt++
 
 		var url = c.cubeURL
-		url.Path += cubeLoadPath
+		url.Path += c.GetLoadPath()
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), bytes.NewBuffer(marshaledRequestBody))
 		if err != nil {
 			return ResponseMetadata{}, fmt.Errorf("new request with context: %w", err)
