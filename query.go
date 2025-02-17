@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	cubeLoadPath = "/cubejs-api/v1/load"
+	defaultCubeLoadPath = "/cubejs-api/v1/load"
 
 	// Maximum duration a query should be retried for
 	maximumQueryDuration = time.Duration(time.Minute * 30)
